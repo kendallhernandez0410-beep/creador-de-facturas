@@ -1,0 +1,83 @@
+{
+  "invoices": [
+    {
+      "id": "fac-001",
+      "number": "FAC-0067",
+      "date": "2026-09-07",
+      "currency": "CRC",
+      "currencySymbol": "₡",
+      "issuer": {
+        "name": "AutoFix Express S.A.",
+        "id": "3-101-789456",
+        "phone": "(506) 2250-0000",
+        "email": "facturacion@autofix.cr",
+        "address": "San José, Paseo Colón, Costa Rica"
+      },
+      "client": {
+        "name": "Juan Pérez",
+        "email": "juan.perez@email.com",
+        "address": "San José, Costa Rica",
+        "id": "1-1452-0982"
+      },
+      "items": [
+        {
+          "description": "Cambio de Aceite Sintético 5W-30 y Filtro",
+          "quantity": 1,
+          "unitPrice": 32000
+        },
+        {
+          "description": "Alineación y Balanceo Computarizado",
+          "quantity": 1,
+          "unitPrice": 25000
+        },
+        {
+          "description": "Juego de Pastillas de Freno Delanteras Cerámicas",
+          "quantity": 2,
+          "unitPrice": 28000
+        }
+      ],
+      "totals": {
+        "subtotal": 113000,
+        "iva": 14690,
+        "total": 127690
+      }
+    },
+    {
+      "id": "fac-002",
+      "number": "FAC-003",
+      "date": "2026-09-07",
+      "currency": "CRC",
+      "currencySymbol": "₡",
+      "issuer": {
+        "name": "AutoFix Express S.A.",
+        "id": "3-101-789456",
+        "phone": "(506) 2250-0000",
+        "email": "facturacion@autofix.cr",
+        "address": "San José, Paseo Colón, Costa Rica"
+      },
+      "client": {
+        "name": "María Rodríguez Vargas",
+        "email": "m.rodriguez@empresa.cr",
+        "address": "Escazú, San José",
+        "id": "1-0987-0321"
+      },
+      "items": [
+        {
+          "description": "Diagnóstico Computarizado de Motor Check Engine",
+          "quantity": 1,
+          "unitPrice": 20000
+        },
+        {
+          "description": "Bujías de Iridio NGK Originales",
+          "quantity": 4,
+          "unitPrice": 8500
+        }
+      ],
+      "totals": {
+        "subtotal": 54000,
+        "iva": 7020,
+        "total": 61020
+      }
+    }
+  ]
+}
