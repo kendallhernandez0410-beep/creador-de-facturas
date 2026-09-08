@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatCRC } from '../utils.js';
+import html2pdf from 'html2pdf.js';
 
 export default function Invoice({ invoice }) {
   const navigate = useNavigate();
+  const invoiceRef = useRef(null);
+
+
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState(invoice?.client?.email || '');
   const [emailSubject, setEmailSubject] = useState(
@@ -11,12 +15,22 @@ export default function Invoice({ invoice }) {
   );
   const [emailSentSuccess, setEmailSentSuccess] = useState(false);
 
+  useEffect(() => {
+    if (!invoice) return;
+
+    document.title = `Factura ${invoice.number}`;
+
+    return () => {
+      document.title = 'Creador de tareas';
+    };
+  }, [invoice]);
+
   if (!invoice) {
     return (
       <div className="max-w-2xl mx-auto my-12 p-8 bg-white rounded-lg shadow-sm border border-gray-200 text-center font-sans">
         <h2 className="text-xl font-bold text-gray-900">Comprobante no localizado</h2>
         <p className="text-gray-500 mt-2 mb-6 text-sm">
-          No se encontró el comprobante en la base de datos (db.json).
+          No se encontró el comprobante en la base de datos.
         </p>
         <Link
           to="/"
@@ -98,8 +112,22 @@ AutoFix Express S.A.`;
     }, 2500);
   };
 
+  const handleExportPdf = async () => {
+    if (!invoiceRef.current) return;
+
+    const options = {
+      margin: 0.5,
+      filename: `Factura_${number}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    };
+
+    await html2pdf().set(options).from(invoiceRef.current).save();
+  };
+
   return (
-    <div className="max-w-4xl mx-auto my-8 px-4 font-sans text-slate-800">
+    <div id="invoice" className="max-w-4xl mx-auto my-8 px-4 font-sans text-slate-800">
       
       {/* Notificación de despacho */}
       {emailSentSuccess && (
@@ -148,6 +176,14 @@ AutoFix Express S.A.`;
             Imprimir Comprobante
           </button>
 
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold uppercase tracking-wider rounded transition"
+          >
+            Descargar PDF
+          </button>
+
           <Link
             to="/create"
             className="inline-flex items-center px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold uppercase tracking-wider rounded transition"
@@ -158,7 +194,7 @@ AutoFix Express S.A.`;
       </div>
 
       {/* NUEVO DISEÑO FORMAL DE FACTURA ELECTRÓNICA COSTARRICENSE */}
-      <div className="bg-white border-2 border-slate-800 rounded-sm shadow-md p-8 md:p-10 print:border-none print:shadow-none print:p-0">
+      <div ref={invoiceRef} className="bg-white border-2 border-slate-800 rounded-sm shadow-md p-8 md:p-10 print:border-none print:shadow-none print:p-0">
         
         {/* Franja Superior Tributaria */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-slate-800 pb-4 mb-6 gap-4">

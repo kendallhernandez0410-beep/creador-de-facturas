@@ -43,6 +43,19 @@ function dbJsonPlugin() {
           return
         }
 
+        // GET /api/invoices/:reference -> Busca una factura por ID o número en db.json
+        if (req.method === 'GET' && url.startsWith('/api/invoices/')) {
+          const reference = decodeURIComponent(url.replace('/api/invoices/', '')).trim().toLowerCase()
+          const invoice = (readDb().invoices || []).find((item) =>
+            String(item.id).trim().toLowerCase() === reference ||
+            String(item.number).trim().toLowerCase() === reference,
+          )
+          res.setHeader('Content-Type', 'application/json')
+          res.statusCode = invoice ? 200 : 404
+          res.end(JSON.stringify(invoice || { error: 'Factura no encontrada' }))
+          return
+        }
+
         // POST /api/invoices -> Escribe directamente en el archivo db.json en disco
         if (req.method === 'POST' && url === '/api/invoices') {
           let body = ''

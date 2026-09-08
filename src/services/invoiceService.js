@@ -23,7 +23,7 @@ export const invoiceService = {
       // Ignorar e intentar siguiente fuente
     }
 
-    // 2. Intentar JSON-Server (puerto 5000) si estuviese corriendo
+
     try {
       const res = await fetch(API_JSON_SERVER, { signal: AbortSignal.timeout(600) });
       if (res.ok) {
@@ -51,6 +51,52 @@ export const invoiceService = {
     const defaultInvoices = initialDb.invoices || [];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultInvoices));
     return defaultInvoices;
+  },
+
+  // Obtener una factura por ID interno o número visible directamente desde db.json
+  async getById(reference) {
+    const normalizedReference = String(reference).trim().toLowerCase();
+    const encodedId = encodeURIComponent(reference);
+
+    try {
+      const res = await fetch(`${API_VITE}/${encodedId}`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      // Intentar la fuente secundaria
+    }
+
+    try {
+      const res = await fetch(`${API_JSON_SERVER}/${encodedId}`, {
+        signal: AbortSignal.timeout(600),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      // JSON-Server no activo
+    }
+
+    const matchesReference = (invoice) =>
+      String(invoice.id).trim().toLowerCase() === normalizedReference ||
+      String(invoice.number).trim().toLowerCase() === normalizedReference;
+
+    try {
+      const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const cachedInvoice = cached.find(matchesReference);
+      if (cachedInvoice) {
+        return cachedInvoice;
+      }
+    } catch (err) {}
+
+    const initialInvoice = (initialDb.invoices || []).find(matchesReference);
+    if (initialInvoice) {
+      return initialInvoice;
+    }
+
+    const allInvoices = await this.getAll();
+    return allInvoices.find(matchesReference) || null;
   },
 
   // Guardar nueva factura directamente en db.json

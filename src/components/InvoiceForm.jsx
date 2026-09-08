@@ -135,7 +135,7 @@ export default function InvoiceForm({ setInvoices }) {
             Emisión de Factura Electrónica (Colones ₡)
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Registro con almacenamiento directo en base de datos db.json (Moneda: CRC ₡).
+            Registro con almacenamiento directo en base de datos (Moneda: CRC ₡).
           </p>
         </div>
         <button
@@ -383,7 +383,7 @@ export default function InvoiceForm({ setInvoices }) {
             <span className="font-mono font-bold uppercase block text-[10px] text-emerald-400">
               Cálculo Automático de IVA (13% Costa Rica):
             </span>
-            <span className="text-[11px]">Todos los valores se almacenan en la base de datos local db.json.</span>
+            <span className="text-[11px]">Todos los valores se almacenan en la base de datos local.</span>
           </div>
 
           <div className="flex items-center gap-6 font-mono">
@@ -416,7 +416,7 @@ export default function InvoiceForm({ setInvoices }) {
             disabled={isSubmitting}
             className="px-6 py-2.5 bg-slate-950 hover:bg-slate-800 text-white rounded-xs text-xs font-bold uppercase tracking-widest transition shadow-xs disabled:opacity-50"
           >
-            {isSubmitting ? 'Guardando...' : 'Emitir y Guardar en db.json'}
+            {isSubmitting ? 'Guardando...' : 'Emitir y Guardar Factura'}
           </button>
         </div>
       </form>

@@ -6,10 +6,48 @@ import { invoiceService } from '../services/invoiceService.js';
 export default function InvoiceList({ invoices, setInvoices }) {
   const navigate = useNavigate();
   const [emailNotification, setEmailNotification] = useState('');
+  const [invoiceReference, setInvoiceReference] = useState('');
+  const [visibleInvoices, setVisibleInvoices] = useState(null);
+  const [searchError, setSearchError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const invoicesToDisplay = visibleInvoices ?? invoices;
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const reference = invoiceReference.trim();
+
+    if (!reference) {
+      setSearchError('Ingrese el ID o número de factura.');
+      setVisibleInvoices([]);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError('');
+
+    try {
+      const invoice = await invoiceService.getById(reference);
+      if (invoice) {
+        setVisibleInvoices([invoice]);
+      } else {
+        setVisibleInvoices([]);
+        setSearchError(`No se encontró una factura con el ID o número "${reference}".`);
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setInvoiceReference('');
+    setVisibleInvoices(null);
+    setSearchError('');
+  };
 
   const handleDelete = async (e, id, number) => {
     e.stopPropagation();
-    if (window.confirm(`¿Confirma anular y eliminar la factura #${number} de la base de datos (db.json)?`)) {
+    if (window.confirm(`¿Confirma anular y eliminar la factura #${number} de la base de datos?`)) {
       await invoiceService.delete(id);
       if (setInvoices) {
         setInvoices((prev) => prev.filter((inv) => String(inv.id) !== String(id)));
@@ -50,13 +88,13 @@ AutoFix Express S.A.`;
       <div className="max-w-5xl mx-auto my-12 px-4">
         <div className="bg-white border-2 border-slate-800 rounded-sm shadow-sm p-12 text-center">
           <div className="w-14 h-14 mx-auto mb-4 border border-slate-300 rounded flex items-center justify-center bg-slate-100 text-slate-800 font-mono text-xl font-bold">
-            db.json
+            CR
           </div>
           <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">
             No hay facturas registradas en la base de datos
           </h2>
           <p className="text-slate-500 max-w-md mx-auto mt-2 mb-6 text-xs">
-            El archivo db.json no contiene comprobantes electrónicos activos.
+            No hay comprobantes electrónicos activos registrados.
           </p>
           <Link
             to="/create"
@@ -69,9 +107,9 @@ AutoFix Express S.A.`;
     );
   }
 
-  const totalFacturado = invoices.reduce((sum, inv) => sum + (inv.totals?.total || 0), 0);
-  const totalIva = invoices.reduce((sum, inv) => sum + (inv.totals?.iva || 0), 0);
-  const promedioFactura = totalFacturado / invoices.length;
+  const totalFacturado = invoicesToDisplay.reduce((sum, inv) => sum + (inv.totals?.total || 0), 0);
+  const totalIva = invoicesToDisplay.reduce((sum, inv) => sum + (inv.totals?.iva || 0), 0);
+  const promedioFactura = totalFacturado / invoicesToDisplay.length;
 
   return (
     <div className="max-w-6xl mx-auto my-8 px-4 space-y-6 font-sans">
@@ -92,7 +130,7 @@ AutoFix Express S.A.`;
               Registro de Facturas Electrónicas
             </h1>
             <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-mono font-bold rounded-xs">
-              db.json ACTIVO
+              SISTEMA ACTIVO
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -107,11 +145,45 @@ AutoFix Express S.A.`;
         </Link>
       </div>
 
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+        <label className="flex-1 text-xs font-semibold text-slate-700 uppercase tracking-wider">
+          Buscar factura por ID o número
+          <input
+            value={invoiceReference}
+            onChange={(e) => setInvoiceReference(e.target.value)}
+            placeholder="Ejemplo: FAC-003 o fac-002"
+            className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-xs text-sm font-mono font-normal normal-case tracking-normal focus:outline-none focus:ring-2 focus:ring-slate-400"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={isSearching}
+          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold uppercase tracking-wider rounded-xs transition"
+        >
+          {isSearching ? 'Buscando...' : 'Buscar'}
+        </button>
+        {visibleInvoices !== null && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs font-semibold uppercase tracking-wider rounded-xs transition"
+          >
+            Ver todas
+          </button>
+        )}
+      </form>
+
+      {searchError && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-xs">
+          {searchError}
+        </p>
+      )}
+
       {/* Indicadores Financieros en Colones (₡) */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xs border-2 border-slate-800 shadow-xs">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Comprobantes</span>
-          <p className="text-xl font-mono font-bold text-slate-900 mt-1">{invoices.length} docs</p>
+          <p className="text-xl font-mono font-bold text-slate-900 mt-1">{invoicesToDisplay.length} docs</p>
         </div>
         <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-xs">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">IVA 13% Recaudado (₡)</span>
@@ -142,7 +214,7 @@ AutoFix Express S.A.`;
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {invoices.map((invoice) => {
+              {invoicesToDisplay.map((invoice) => {
                 const totalAmount = invoice.totals?.total ?? 0;
                 return (
                   <tr
@@ -193,7 +265,7 @@ AutoFix Express S.A.`;
                           <button
                             type="button"
                             onClick={(e) => handleDelete(e, invoice.id, invoice.number)}
-                            title="Eliminar de db.json"
+                            title="Eliminar factura"
                             className="p-1 text-slate-400 hover:text-red-700 rounded-xs transition"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
